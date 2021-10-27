@@ -54,4 +54,19 @@ userRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
   }
 });
 
+userRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    const filter = { _id: req.user._id };
+    const update = { ...req.body };
+    const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
+      returnOriginal: false,
+    });
+    await updatedUser.save();
+    res.send(updatedUser);
+    console.log("🔸USER EDITED BY TOKEN🙌");
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default userRouter;
