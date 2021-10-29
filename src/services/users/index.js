@@ -2,10 +2,53 @@ import express from "express";
 import UserModel from "./schema.js";
 import createHttpError from "http-errors";
 import { generateTokens } from "../../utils/jwt.js";
-import {JWTAuthMiddleware} from "../../utils/middlewares.js"
+import { JWTAuthMiddleware } from "../../utils/middlewares.js";
+import multer from "multer";
 
 const userRouter = express.Router();
 
+//GET ALL USERS WITH QUERY
+userRouter.get("/", async (req, res, next) => {
+  try {
+    const allUsers = await UserModel.find({});
+    if (req.query.username !== undefined || req.query.city !== undefined) {
+      if (req.query.username) {
+        const users = await UserModel.find({ username: req.query.username });
+        console.log("🔸USERS FETCHED BY QUERY🙌");
+        res.send(users);
+      } else if (req.query.city) {
+        const users = await UserModel.find({ city: req.query.city });
+        console.log("🔸USERS FETCHED BY QUERY🙌");
+        res.send(users);
+      }
+      /* if (req.query.username) {
+        const { total, users } = await UserModel.find({ username: query });
+        const safeUser = users;
+        console.log(safeUser);
+        res.send({
+          links: query.links("/users", total),
+          total,
+          users,
+          pageTotal: Math.ceil(total / query.options.limit),
+        });
+        console.log("🔸USERS FETCHED BY QUERY🙌");
+      } else if (req.query.city) {
+        const { total, users } = await UserModel.find({ city: query });
+        res.send({
+          links: query.links("/users", total),
+          total,
+          users,
+          pageTotal: Math.ceil(total / query.options.limit),
+        });
+        console.log("🔸USERS FETCHED BY QUERY🙌");
+      } */
+    } else {
+      res.send(allUsers);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 //REGISTRATION
 userRouter.post("/", async (req, resp, next) => {
