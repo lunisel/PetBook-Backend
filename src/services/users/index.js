@@ -1,9 +1,9 @@
 import express from "express";
 import UserModel from "./schema.js";
-import createHttpError from "http-errors";
 import { generateTokens } from "../../utils/jwt.js";
 import { JWTAuthMiddleware } from "../../utils/middlewares.js";
 import multer from "multer";
+import { mediaStorage } from "../../utils/mediaStorage.js";
 
 const userRouter = express.Router();
 
@@ -96,5 +96,30 @@ userRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+//UPDATE USER AVATAR
+userRouter.post(
+  "/me/avatar",
+  JWTAuthMiddleware,
+  multer({ storage: mediaStorage }).single("avatar"),
+  async (req, res, next) => {
+    try {
+      let response = await req.body
+
+      /* const filter = { _id: req.user._id };
+      const update = { ...req.body, avatar: req.file.path };
+      const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
+        returnOriginal: false,
+      });
+      await updatedUser.save();
+      res.send(updatedUser);
+      console.log("PROFILE AVATAR CHANGE SUCCESSFUL🙌"); */
+      console.log(response)
+      res.send(req.body)
+  } catch (error) {
+  next(error);
+  }
+  }
+  );
 
 export default userRouter;

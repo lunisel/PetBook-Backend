@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema({
   myOwner: {
     name: { type: String, required: true },
     surname: { type: String, required: true },
-    avatar: { type: String, required: true, default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"},
+    ownerAvatar: { type: String, required: true, default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"},
     birthday: { type: String, required: false },
   },
   friends: [FriendSchema],
