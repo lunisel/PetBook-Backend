@@ -11,7 +11,7 @@ postRouter.post("/", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     let user = req.user;
     let newPost = new PostModel({ ...req.body, user: user._id });
-    let {_id} = await newPost.save()
+    let { _id } = await newPost.save();
     console.log("🔸POSTED A NEW POST🙌");
     resp.send(newPost);
   } catch (err) {
@@ -22,7 +22,9 @@ postRouter.post("/", JWTAuthMiddleware, async (req, resp, next) => {
 postRouter.get("/me", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     let user = req.user;
-    let mePosts = await PostModel.find({ user: user._id }).populate("user", {avatar: 1, username: 1, petName: 1, _id: 1}).sort({createdAt: -1});
+    let mePosts = await PostModel.find({ user: user._id })
+      .populate("user", { avatar: 1, username: 1, petName: 1, _id: 1 })
+      .sort({ createdAt: -1 });
     if (mePosts) {
       console.log("🔸ME POSTS FETCHED🙌");
       resp.send(mePosts);
@@ -34,9 +36,21 @@ postRouter.get("/me", JWTAuthMiddleware, async (req, resp, next) => {
 
 postRouter.get("/", async (req, resp, next) => {
   try {
-    let posts = await PostModel.find({}).populate("user", {avatar: 1, username: 1, petName: 1, _id: 1}).sort({createdAt: -1});
+    let posts = await PostModel.find({})
+      .populate("user", { avatar: 1, username: 1, petName: 1, _id: 1 })
+      .sort({ createdAt: -1 });
     console.log("🔸ALL POSTS FETCHED🙌");
     resp.send(posts);
+  } catch (err) {
+    next(err);
+  }
+});
+
+postRouter.delete("/:id", JWTAuthMiddleware, async (req, resp, next) => {
+  try {
+    let id = req.params.id
+    let deletedPost = await PostModel.findByIdAndDelete(id)
+    resp.status(204).send("Deleted")
   } catch (err) {
     next(err);
   }
