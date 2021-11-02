@@ -1,6 +1,6 @@
 import express from "express";
 import UserModel from "./schema.js";
-import { generateTokens } from "../../utils/jwt.js";
+import { generateTokens, verifyRefreshJWT } from "../../utils/jwt.js";
 import { JWTAuthMiddleware } from "../../utils/middlewares.js";
 import multer from "multer";
 import { mediaStorage } from "../../utils/mediaStorage.js";
@@ -62,6 +62,24 @@ userRouter.post("/login", async (req, res, next) => {
       const { accessToken, refreshToken } = await generateTokens(user);
       res.send({ accessToken, refreshToken });
       console.log("🔸USER LOGGED IN BY EMAIL, PASSWORD🙌");
+    } else {
+      res.status(401).send("👻 Something's wrong with your credentials!");
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// NEW ACCESS TOKEN FROM REFRESH TOKEN
+userRouter.post("/session", async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const decodedToken = await verifyRefreshJWT(refreshToken);
+      const user = await UserModel.findById(decodedToken._id);
+    if (user.refreshToken === refreshToken) {
+      const { accessToken, refreshToken } = await generateTokens(user);
+      console.log("🔸SESSION REFRESHED WITH REFRESH TOKEN🙌");
+      res.send({ accessToken, refreshToken });
     } else {
       res.status(401).send("👻 Something's wrong with your credentials!");
     }

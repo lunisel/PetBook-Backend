@@ -50,6 +50,7 @@ postRouter.delete("/:id", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     let id = req.params.id
     let deletedPost = await PostModel.findByIdAndDelete(id)
+    console.log("🔸POST DELETED SUCCESSFULLY🙌");
     resp.status(204).send("Deleted")
   } catch (err) {
     next(err);
