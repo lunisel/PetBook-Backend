@@ -33,16 +33,6 @@ userRouter.get("/", async (req, resp, next) => {
   }
 });
 
-//GET SINGLE USER WITH ID
-
-userRouter.get("/:id", async (req, resp, next) => {
-  try {
-    let user = await UserModel.findById(req.params.id);
-    if (user) resp.send(user);
-  } catch (err) {
-    next(err);
-  }
-});
 
 //REGISTRATION
 userRouter.post("/", async (req, resp, next) => {
@@ -80,6 +70,16 @@ userRouter.post("/login", async (req, res, next) => {
     next(err);
   }
 });
+//GET ME FROM TOKEN
+userRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
+  console.log("/me")
+  try {
+    res.send(req.user);
+    console.log("🔸USER FETCHED BY TOKEN🙌");
+  } catch (error) {
+    next(error);
+  }
+});
 
 // NEW ACCESS TOKEN FROM REFRESH TOKEN
 userRouter.post("/session", async (req, res, next) => {
@@ -99,15 +99,6 @@ userRouter.post("/session", async (req, res, next) => {
   }
 });
 
-//GET ME FROM TOKEN
-userRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
-  try {
-    res.send(req.user);
-    console.log("🔸USER FETCHED BY TOKEN🙌");
-  } catch (error) {
-    next(error);
-  }
-});
 
 //UPDATE USER WITH TOKEN
 
@@ -134,7 +125,7 @@ userRouter.post(
   async (req, res, next) => {
     try {
       let response = await req.body;
-
+      
       /* const filter = { _id: req.user._id };
       const update = { ...req.body, avatar: req.file.path };
       const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
@@ -149,15 +140,26 @@ userRouter.post(
       next(error);
     }
   }
-);
+  );
 
-userRouter.post("/friends/add", JWTAuthMiddleware, async (req, res, next) => {
-  try {
-    let me = req.user;
-    let filter = me.following.filter(
-      (u) => u.user.toString() === req.body.user
-    );
-    if (filter.length > 0) {
+  //GET SINGLE USER WITH ID
+  
+  userRouter.get("/friend/:id", async (req, resp, next) => {
+    try {
+      let user = await UserModel.findById(req.params.id);
+      if (user) resp.send(user);
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+  userRouter.post("/friends/add", JWTAuthMiddleware, async (req, res, next) => {
+    try {
+      let me = req.user;
+      let filter = me.following.filter(
+        (u) => u.user.toString() === req.body.user
+        );
+        if (filter.length > 0) {
       console.log("🔸FRIEND ALREADY IN YOUR FOLLOWINGS🙌");
       res.send(me);
     } else {
