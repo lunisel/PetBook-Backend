@@ -23,7 +23,8 @@ postRouter.get("/me", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     let user = req.user;
     let mePosts = await PostModel.find({ user: user._id })
-      .populate("user", { avatar: 1, username: 1, petName: 1, _id: 1 }).populate("comments")
+      .populate("user", { avatar: 1, username: 1, petName: 1, _id: 1 })
+      .populate("comments")
       .sort({ createdAt: -1 });
     if (mePosts) {
       console.log("🔸ME POSTS FETCHED🙌");
@@ -59,20 +60,44 @@ postRouter.delete("/:id", JWTAuthMiddleware, async (req, resp, next) => {
 
 postRouter.post("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
   try {
-    const id =  req.params.id ;
-    let post= await PostModel.findById(id)
-    post.comments.push(newComment)
+    const id = req.params.id;
+    let post = await PostModel.findById(id);
+    post.comments.push(newComment);
     await post.save();
     console.log("🔸COMMENT POSTED🙌");
     resp.send(post);
   } catch (err) {
-    console.log("error catch comment post ->",err)
+    console.log("error catch comment post ->", err);
     next(err);
   }
 });
 
-postRouter.get("/:id/comments", JWTAuthMiddleware, async (req, resp, next) =>{
-  try{}catch(err){next(err)}
-})
+postRouter.get("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
+  try {
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* -------------------- DISPLAY POSTS FROM MY CITY ---------------------- */
+
+postRouter.post("/feed", async (req, resp, next) => {
+  try {
+    let arrOfUsers = req.body;
+    let arrOfPosts = [];
+    for(let i= 0 ; i<arrOfUsers.length; i++){
+      let postsByUser = await PostModel.find({ user: arrOfUsers[i] }).populate("user", {petName: 1, avatar: 1, _id: 1});
+      arrOfPosts.push(...postsByUser)
+      
+    }
+
+    if (arrOfPosts !== []) {
+      console.log("FEED WITH QUERY FETCHED", arrOfUsers.length);
+      resp.send(arrOfPosts);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default postRouter;

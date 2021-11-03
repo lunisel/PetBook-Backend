@@ -72,7 +72,6 @@ userRouter.post("/login", async (req, res, next) => {
 });
 //GET ME FROM TOKEN
 userRouter.get("/me", JWTAuthMiddleware, async (req, res, next) => {
-  console.log("/me")
   try {
     res.send(req.user);
     console.log("🔸USER FETCHED BY TOKEN🙌");
@@ -187,15 +186,11 @@ userRouter.post(
       let otherUser = await UserModel.findById(otherUserId)
 
       let othersNewFollowers = otherUser.followers.filter(u => u._id.toString() !== currentUserId.toString())
-
       otherUser.followers = othersNewFollowers
-
       await otherUser.save()
 
       let myNewFollowing = currentUser.following.filter(u => u.user.toString() !== otherUserId.toString())
-
       currentUser.following = myNewFollowing
-
       await currentUser.save()
 
       res.send(currentUser)
