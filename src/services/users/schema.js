@@ -3,14 +3,6 @@ import bcrypt from "bcrypt";
 
 const FriendSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  status: {
-    type: Number,
-    enums: [
-      0, //add friend,
-      1, //requested,
-      2, //friends
-    ],
-  },
 });
 
 const UserSchema = new mongoose.Schema({
@@ -30,7 +22,8 @@ const UserSchema = new mongoose.Schema({
     ownerAvatar: { type: String, required: true, default: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"},
     birthday: { type: String, required: false },
   },
-  friends: [FriendSchema],
+  followers: [FriendSchema],
+  following: [FriendSchema],
   refreshToken: { type: String, required: false },
 });
 

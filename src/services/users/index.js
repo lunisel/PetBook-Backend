@@ -33,6 +33,17 @@ userRouter.get("/", async (req, resp, next) => {
   }
 });
 
+//GET SINGLE USER WITH ID
+
+userRouter.get("/:id", async (req, resp, next) => {
+  try {
+    let user = await UserModel.findById(req.params.id);
+    if (user) resp.send(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
 //REGISTRATION
 userRouter.post("/", async (req, resp, next) => {
   try {
@@ -75,7 +86,7 @@ userRouter.post("/session", async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
     const decodedToken = await verifyRefreshJWT(refreshToken);
-      const user = await UserModel.findById(decodedToken._id);
+    const user = await UserModel.findById(decodedToken._id);
     if (user.refreshToken === refreshToken) {
       const { accessToken, refreshToken } = await generateTokens(user);
       console.log("🔸SESSION REFRESHED WITH REFRESH TOKEN🙌");
@@ -122,7 +133,7 @@ userRouter.post(
   multer({ storage: mediaStorage }).single("avatar"),
   async (req, res, next) => {
     try {
-      let response = await req.body
+      let response = await req.body;
 
       /* const filter = { _id: req.user._id };
       const update = { ...req.body, avatar: req.file.path };
@@ -132,12 +143,47 @@ userRouter.post(
       await updatedUser.save();
       res.send(updatedUser);
       console.log("PROFILE AVATAR CHANGE SUCCESSFUL🙌"); */
-      console.log(response)
+      console.log(response);
+      res.send(req.body);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+userRouter.post("/friends/add", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    let me = req.user;
+    let filter = me.following.filter(
+      (u) => u.user.toString() === req.body.user
+    );
+    if (filter.length > 0) {
+      console.log("🔸FRIEND ALREADY IN YOUR FOLLOWINGS🙌");
+      res.send(me);
+    } else {
+      me.following.push(req.body);
+      await me.save();
+      let otherUser = await UserModel.findById(req.body.user);
+      otherUser.followers.push(me._id);
+      await otherUser.save();
+      console.log("🔸FRIEND ADDED TO YOUR FOLLOWING🙌");
+      res.send(me);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+userRouter.post(
+  "/friends/remove",
+  JWTAuthMiddleware,
+  async (req, res, next) => {
+    try {
       res.send(req.body)
-  } catch (error) {
-  next(error);
+    } catch (err) {
+      next(err);
+    }
   }
-  }
-  );
+);
 
 export default userRouter;
