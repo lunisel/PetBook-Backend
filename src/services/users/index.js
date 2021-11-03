@@ -181,7 +181,24 @@ userRouter.post(
   JWTAuthMiddleware,
   async (req, res, next) => {
     try {
-      res.send(req.body)
+      let currentUser = req.user
+      let currentUserId = req.user._id
+      let otherUserId = req.body.user
+      let otherUser = await UserModel.findById(otherUserId)
+
+      let othersNewFollowers = otherUser.followers.filter(u => u._id.toString() !== currentUserId.toString())
+
+      otherUser.followers = othersNewFollowers
+
+      await otherUser.save()
+
+      let myNewFollowing = currentUser.following.filter(u => u.user.toString() !== otherUserId.toString())
+
+      currentUser.following = myNewFollowing
+
+      await currentUser.save()
+
+      res.send(currentUser)
     } catch (err) {
       next(err);
     }
