@@ -64,34 +64,60 @@ postRouter.post("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     const id = req.params.id;
     let post = await PostModel.findById(id);
+    let newComment = {
+      refPost: id,
+      user: req.user._id,
+      text: req.body.text,
+    };
     post.comments.push(newComment);
     await post.save();
+    let newPost = await PostModel.findById(id).populate("comments.user", {
+      avatar: 1,
+      username: 1,
+      _id: 1,
+    });
     console.log("🔸COMMENT POSTED🙌");
-    resp.send(post);
+    resp.send(newPost);
   } catch (err) {
     console.log("error catch comment post ->", err);
     next(err);
   }
 });
 
-postRouter.get("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
-  try {
-  } catch (err) {
-    next(err);
+postRouter.put(
+  "/:id/deleteComment/:commentId",
+  JWTAuthMiddleware,
+  async (req, resp, next) => {
+    try {
+      let postId = req.params.id;
+      let post = await PostModel.findById(postId).populate("comments.user", {
+        avatar: 1,
+        username: 1,
+        _id: 1,
+      });
+      let newComments = post.comments.filter(
+        (c) => c._id.toString() !== req.params.commentId
+      );
+      post.comments = newComments;
+      await post.save();
+      resp.send(post);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /* ---------------------------------------LIKE ROUTERS---------------------------------- */
 
 postRouter.post("/:id/like", JWTAuthMiddleware, async (req, resp, next) => {
   try {
-    let currentUser = req.user
-    let currentUserId = currentUser._id
-    let postId = req.params.id
-    let post = await PostModel.findById(postId)
-    post.likes.push(currentUserId)
-    await post.save()
-    resp.send(post)
+    let currentUser = req.user;
+    let currentUserId = currentUser._id;
+    let postId = req.params.id;
+    let post = await PostModel.findById(postId);
+    post.likes.push(currentUserId);
+    await post.save();
+    resp.send(post);
   } catch (err) {
     next(err);
   }
@@ -99,14 +125,16 @@ postRouter.post("/:id/like", JWTAuthMiddleware, async (req, resp, next) => {
 
 postRouter.post("/:id/dislike", JWTAuthMiddleware, async (req, resp, next) => {
   try {
-    let currentUser = req.user
-    let currentUserId = currentUser._id
-    let postId = req.params.id
-    let post = await PostModel.findById(postId)
-    let newLikesArr = post.likes.filter(u => u.toString() !== currentUserId.toString())
-    post.likes = newLikesArr
-    await post.save()
-    resp.send(post)
+    let currentUser = req.user;
+    let currentUserId = currentUser._id;
+    let postId = req.params.id;
+    let post = await PostModel.findById(postId);
+    let newLikesArr = post.likes.filter(
+      (u) => u.toString() !== currentUserId.toString()
+    );
+    post.likes = newLikesArr;
+    await post.save();
+    resp.send(post);
   } catch (err) {
     next(err);
   }
@@ -145,11 +173,10 @@ postRouter.get("/friends", JWTAuthMiddleware, async (req, resp, next) => {
     let friendsPostsArr = [];
     for (let i = 0; i < friendsId.length; i++) {
       let postsOfF = await PostModel.find({ user: friendsId[i] }).populate(
-        "user",
+        "user comments.user",
         { petName: 1, avatar: 1, _id: 1, username: 1 }
       );
       friendsPostsArr.push(...postsOfF);
-      console.log(postsOfF);
     }
     let myPosts = await PostModel.find({ user: currentUser._id }).populate(
       "user",
