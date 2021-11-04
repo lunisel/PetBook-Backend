@@ -81,6 +81,37 @@ postRouter.get("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
   }
 });
 
+/* ---------------------------------------LIKE ROUTERS---------------------------------- */
+
+postRouter.post("/:id/like", JWTAuthMiddleware, async (req, resp, next) => {
+  try {
+    let currentUser = req.user
+    let currentUserId = currentUser._id
+    let postId = req.params.id
+    let post = await PostModel.findById(postId)
+    post.likes.push(currentUserId)
+    await post.save()
+    resp.send(post)
+  } catch (err) {
+    next(err);
+  }
+});
+
+postRouter.post("/:id/dislike", JWTAuthMiddleware, async (req, resp, next) => {
+  try {
+    let currentUser = req.user
+    let currentUserId = currentUser._id
+    let postId = req.params.id
+    let post = await PostModel.findById(postId)
+    let newLikesArr = post.likes.filter(u => u.toString() !== currentUserId.toString())
+    post.likes = newLikesArr
+    await post.save()
+    resp.send(post)
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* -------------------- DISPLAY POSTS FROM MY CITY ---------------------- */
 
 postRouter.post("/feed", async (req, resp, next) => {
@@ -88,10 +119,10 @@ postRouter.post("/feed", async (req, resp, next) => {
     let arrOfUsers = req.body;
     let arrOfPosts = [];
     for (let i = 0; i < arrOfUsers.length; i++) {
-      let postsByUser = await PostModel.find({ user: arrOfUsers[i] , "content.img": {$exists:true}}).populate(
-        "user",
-        { petName: 1, avatar: 1, _id: 1, username: 1 }
-      );
+      let postsByUser = await PostModel.find({
+        user: arrOfUsers[i],
+        "content.img": { $exists: true },
+      }).populate("user", { petName: 1, avatar: 1, _id: 1, username: 1 });
       arrOfPosts.push(...postsByUser);
     }
 
@@ -120,7 +151,7 @@ postRouter.get("/friends", JWTAuthMiddleware, async (req, resp, next) => {
       friendsPostsArr.push(...postsOfF);
       console.log(postsOfF);
     }
-    let myPosts = await PostModel.find({ user: currentUser._id}).populate(
+    let myPosts = await PostModel.find({ user: currentUser._id }).populate(
       "user",
       { petName: 1, avatar: 1, _id: 1, username: 1 }
     );
