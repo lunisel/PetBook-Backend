@@ -58,6 +58,8 @@ postRouter.delete("/:id", JWTAuthMiddleware, async (req, resp, next) => {
   }
 });
 
+/* ------------------------------COMMENTS---------------------------------- */
+
 postRouter.post("/:id/comments", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     const id = req.params.id;
@@ -85,16 +87,46 @@ postRouter.post("/feed", async (req, resp, next) => {
   try {
     let arrOfUsers = req.body;
     let arrOfPosts = [];
-    for(let i= 0 ; i<arrOfUsers.length; i++){
-      let postsByUser = await PostModel.find({ user: arrOfUsers[i] }).populate("user", {petName: 1, avatar: 1, _id: 1});
-      arrOfPosts.push(...postsByUser)
-      
+    for (let i = 0; i < arrOfUsers.length; i++) {
+      let postsByUser = await PostModel.find({ user: arrOfUsers[i] , "content.img": {$exists:true}}).populate(
+        "user",
+        { petName: 1, avatar: 1, _id: 1, username: 1 }
+      );
+      arrOfPosts.push(...postsByUser);
     }
 
     if (arrOfPosts !== []) {
       console.log("FEED WITH QUERY FETCHED", arrOfUsers.length);
       resp.send(arrOfPosts);
     }
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------------------------GET POSTS OF FRIENDS-------------------------- */
+
+postRouter.get("/friends", JWTAuthMiddleware, async (req, resp, next) => {
+  try {
+    let currentUser = req.user;
+    let following = currentUser.following;
+    let friendsId = following.map((u) => u.user.toString());
+    let friendsPostsArr = [];
+    for (let i = 0; i < friendsId.length; i++) {
+      let postsOfF = await PostModel.find({ user: friendsId[i] }).populate(
+        "user",
+        { petName: 1, avatar: 1, _id: 1, username: 1 }
+      );
+      friendsPostsArr.push(...postsOfF);
+      console.log(postsOfF);
+    }
+    let myPosts = await PostModel.find({ user: currentUser._id}).populate(
+      "user",
+      { petName: 1, avatar: 1, _id: 1, username: 1 }
+    );
+    friendsPostsArr.push(...myPosts);
+    console.log("HOME POSTS FETCHED !!");
+    resp.send(friendsPostsArr);
   } catch (err) {
     next(err);
   }
