@@ -179,7 +179,7 @@ postRouter.get("/friends", JWTAuthMiddleware, async (req, resp, next) => {
       friendsPostsArr.push(...postsOfF);
     }
     let myPosts = await PostModel.find({ user: currentUser._id }).populate(
-      "user",
+      "user comments.user",
       { petName: 1, avatar: 1, _id: 1, username: 1 }
     );
     friendsPostsArr.push(...myPosts);
