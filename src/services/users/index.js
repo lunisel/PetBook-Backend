@@ -33,7 +33,6 @@ userRouter.get("/", async (req, resp, next) => {
   }
 });
 
-
 //REGISTRATION
 userRouter.post("/", async (req, resp, next) => {
   try {
@@ -98,7 +97,6 @@ userRouter.post("/session", async (req, res, next) => {
   }
 });
 
-
 //UPDATE USER WITH TOKEN
 
 userRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
@@ -124,7 +122,7 @@ userRouter.post(
   async (req, res, next) => {
     try {
       let response = await req.body;
-      
+
       /* const filter = { _id: req.user._id };
       const update = { ...req.body, avatar: req.file.path };
       const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
@@ -139,26 +137,26 @@ userRouter.post(
       next(error);
     }
   }
-  );
+);
 
-  //GET SINGLE USER WITH ID
-  
-  userRouter.get("/friend/:id", async (req, resp, next) => {
-    try {
-      let user = await UserModel.findById(req.params.id);
-      if (user) resp.send(user);
-    } catch (err) {
-      next(err);
-    }
-  });
-  
-  userRouter.post("/friends/add", JWTAuthMiddleware, async (req, res, next) => {
-    try {
-      let me = req.user;
-      let filter = me.following.filter(
-        (u) => u.user.toString() === req.body.user
-        );
-        if (filter.length > 0) {
+//GET SINGLE USER WITH ID
+
+userRouter.get("/friend/:id", async (req, resp, next) => {
+  try {
+    let user = await UserModel.findById(req.params.id);
+    if (user) resp.send(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
+userRouter.post("/friends/add", JWTAuthMiddleware, async (req, res, next) => {
+  try {
+    let me = req.user;
+    let filter = me.following.filter(
+      (u) => u.user.toString() === req.body.user
+    );
+    if (filter.length > 0) {
       console.log("🔸FRIEND ALREADY IN YOUR FOLLOWINGS🙌");
       res.send(me);
     } else {
@@ -180,24 +178,41 @@ userRouter.post(
   JWTAuthMiddleware,
   async (req, res, next) => {
     try {
-      let currentUser = req.user
-      let currentUserId = req.user._id
-      let otherUserId = req.body.user
-      let otherUser = await UserModel.findById(otherUserId)
+      let currentUser = req.user;
+      let currentUserId = req.user._id;
+      let otherUserId = req.body.user;
+      let otherUser = await UserModel.findById(otherUserId);
 
-      let othersNewFollowers = otherUser.followers.filter(u => u._id.toString() !== currentUserId.toString())
-      otherUser.followers = othersNewFollowers
-      await otherUser.save()
+      let othersNewFollowers = otherUser.followers.filter(
+        (u) => u._id.toString() !== currentUserId.toString()
+      );
+      otherUser.followers = othersNewFollowers;
+      await otherUser.save();
 
-      let myNewFollowing = currentUser.following.filter(u => u.user.toString() !== otherUserId.toString())
-      currentUser.following = myNewFollowing
-      await currentUser.save()
+      let myNewFollowing = currentUser.following.filter(
+        (u) => u.user.toString() !== otherUserId.toString()
+      );
+      currentUser.following = myNewFollowing;
+      await currentUser.save();
 
-      res.send(currentUser)
+      res.send(currentUser);
     } catch (err) {
       next(err);
     }
   }
 );
+
+/* ---------GET PROFILE FROM USERNAME----------- */
+
+userRouter.get("/profile/:username", async (req, resp, next) => {
+  try {
+    let username = req.params.username;
+    let user = await UserModel.find({ username: username });
+    console.log(user[0]);
+    resp.send(user[0]);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default userRouter;

@@ -23,8 +23,12 @@ postRouter.get("/me", JWTAuthMiddleware, async (req, resp, next) => {
   try {
     let user = req.user;
     let mePosts = await PostModel.find({ user: user._id })
-      .populate("user", { avatar: 1, username: 1, petName: 1, _id: 1 })
-      .populate("comments")
+      .populate("user comments.user", {
+        avatar: 1,
+        username: 1,
+        petName: 1,
+        _id: 1,
+      })
       .sort({ createdAt: -1 });
     if (mePosts) {
       console.log("🔸ME POSTS FETCHED🙌");
@@ -150,7 +154,12 @@ postRouter.post("/feed", async (req, resp, next) => {
       let postsByUser = await PostModel.find({
         user: arrOfUsers[i],
         "content.img": { $exists: true },
-      }).populate("user", { petName: 1, avatar: 1, _id: 1, username: 1 });
+      }).populate("user comments.user", {
+        avatar: 1,
+        username: 1,
+        petName: 1,
+        _id: 1,
+      });
       arrOfPosts.push(...postsByUser);
     }
 
