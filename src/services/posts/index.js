@@ -199,4 +199,25 @@ postRouter.get("/friends", JWTAuthMiddleware, async (req, resp, next) => {
   }
 });
 
+/* -----------------------------------GET SINGLE FRIENDS POSTS-------------------------- */
+
+postRouter.get("/:userId", async (req, resp, next) => {
+  try {
+    let posts = await PostModel.find({ user: req.params.userId.toString() })
+      .populate("user comments.user", {
+        avatar: 1,
+        username: 1,
+        petName: 1,
+        _id: 1,
+      })
+      .sort({ createdAt: -1 });
+    if (posts) {
+      console.log("🔸SINGLE FRIEND'S POSTS FETCHED🙌");
+      resp.send(posts);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default postRouter;

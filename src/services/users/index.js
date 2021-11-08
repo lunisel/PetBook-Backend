@@ -115,24 +115,20 @@ userRouter.put("/me", JWTAuthMiddleware, async (req, res, next) => {
 });
 
 //UPDATE USER AVATAR
-userRouter.post(
-  "/me/avatar",
+userRouter.put(
+  "/me/owner/avatar",
   JWTAuthMiddleware,
-  multer({ storage: mediaStorage }).single("avatar"),
   async (req, res, next) => {
     try {
-      let response = await req.body;
-
-      /* const filter = { _id: req.user._id };
-      const update = { ...req.body, avatar: req.file.path };
-      const updatedUser = await UserModel.findOneAndUpdate(filter, update, {
-        returnOriginal: false,
-      });
-      await updatedUser.save();
-      res.send(updatedUser);
-      console.log("PROFILE AVATAR CHANGE SUCCESSFUL🙌"); */
-      console.log(response);
-      res.send(req.body);
+      let user = req.user
+      let owner = user.myOwner
+      let newOwner = {
+        ...owner,
+        ...req.body
+      }
+      user.myOwner = newOwner
+      await user.save()
+      res.send(user);
     } catch (error) {
       next(error);
     }
@@ -208,7 +204,7 @@ userRouter.get("/profile/:username", async (req, resp, next) => {
   try {
     let username = req.params.username;
     let user = await UserModel.find({ username: username });
-    console.log(user[0]);
+    console.log("🔸FRIEND FETCHED🙌");
     resp.send(user[0]);
   } catch (err) {
     next(err);
