@@ -220,4 +220,28 @@ postRouter.get("/:userId", async (req, resp, next) => {
   }
 });
 
+/* ---------------------------------------ME POSTS WITH IMG------------------------ */
+
+postRouter.get("/:userId/photos", async (req, resp, next) => {
+  try {
+    let userId = req.params.userId;
+      let postsByUser = await PostModel.find({
+        user: userId,
+        "content.img": { $exists: true },
+      }).populate("user comments.user", {
+        avatar: 1,
+        username: 1,
+        petName: 1,
+        _id: 1,
+      });
+
+
+      console.log("PHOTOS FROM USER FETCHED");
+      resp.send(postsByUser);
+
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default postRouter;
