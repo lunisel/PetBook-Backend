@@ -18,7 +18,8 @@ notesRouter.get("/me", JWTAuthMiddleware, async (req, resp, next) => {
 
 notesRouter.post("/me", JWTAuthMiddleware, async (req, resp, next) => {
   try {
-    const newNote = new NotesModel(...req.body);
+    const newNote = new NotesModel(req.body);
+    console.log(newNote)
     await newNote.save();
     console.log("🔸POSTED A NEW NOTE🙌");
     resp.send(newNote);
