@@ -2,8 +2,6 @@ import express from "express";
 import UserModel from "./schema.js";
 import { generateTokens, verifyRefreshJWT } from "../../utils/jwt.js";
 import { JWTAuthMiddleware } from "../../utils/middlewares.js";
-import multer from "multer";
-import { mediaStorage } from "../../utils/mediaStorage.js";
 
 const userRouter = express.Router();
 

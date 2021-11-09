@@ -4,6 +4,7 @@ import cors from "cors";
 import listEndpoints from "express-list-endpoints";
 import userRouter from "./services/users/index.js";
 import postRouter from "./services/posts/index.js";
+import notesRouter from "./services/notes/index.js";
 
 const port = process.env.PORT | 3005;
 const mongoConnection = process.env.MONGO_URL;
@@ -15,6 +16,7 @@ server.use(express.urlencoded({limit: "50mb", extended: true}))
 
 server.use("/users", userRouter);
 server.use("/posts", postRouter);
+server.use("/notes", notesRouter)
 
 console.table(listEndpoints(server));
 

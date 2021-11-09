@@ -1,9 +1,6 @@
 import express from "express";
 import PostModel from "./schema.js";
-import { generateTokens } from "../../utils/jwt.js";
 import { JWTAuthMiddleware } from "../../utils/middlewares.js";
-import multer from "multer";
-import { mediaStorage } from "../../utils/mediaStorage.js";
 
 const postRouter = express.Router();
 
