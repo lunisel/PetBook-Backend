@@ -6,7 +6,7 @@ import userRouter from "./services/users/index.js";
 import postRouter from "./services/posts/index.js";
 import notesRouter from "./services/notes/index.js";
 
-const port = process.env.PORT | 3005;
+const port = process.env.PORT || 3005;
 const mongoConnection = process.env.MONGO_URL;
 const server = express();
 
