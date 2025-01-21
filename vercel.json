@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/notes", "dest": "/src/services/notes/index.js" },
+    { "src": "/api/posts", "dest": "/src/services/posts/index.js" },
+    { "src": "/api/users", "dest": "/src/services/users/index.js" }
+  ]
+}
